@@ -1,13 +1,24 @@
 
 #include "core.h"
+#include "TextureLoader.h"
+#include "ArcballCamera.h"
+#include "PrincipleAxesModel.h"
 
 using namespace std;
-
+using namespace cst;
 
 // global variables
 
-// Example exture object
+// Example texture object
 GLuint playerTexture;
+
+ArcballCamera* mainCamera = nullptr;
+bool mouseDown = false;
+double prevMouseX, prevMouseY;
+
+PrincipleAxesModel* principleAxes = nullptr;
+
+
 
 
 // Window size
@@ -16,6 +27,9 @@ const unsigned int initHeight = 512;
 
 // Function prototypes
 void renderScene();
+void mouseMoveHandler(GLFWwindow* window, double xpos, double ypos);
+void mouseButtonHandler(GLFWwindow* window, int button, int action, int mods);
+void mouseEnterHandler(GLFWwindow* window, int entered);
 void resizeWindow(GLFWwindow* window, int width, int height);
 void keyboardHandler(GLFWwindow* window, int key, int scancode, int action, int mods);
 void updateScene();
@@ -52,7 +66,9 @@ int main() {
 	// Set callback functions to handle different events
 	glfwSetFramebufferSizeCallback(window, resizeWindow); // resize window callback
 	glfwSetKeyCallback(window, keyboardHandler); // Keyboard input callback
-
+	glfwSetCursorPosCallback(window, mouseMoveHandler);
+	glfwSetMouseButtonCallback(window, mouseButtonHandler);
+	glfwSetCursorEnterCallback(window, mouseEnterHandler);
 
 	// Initialise glew
 	glewInit();
@@ -70,45 +86,25 @@ int main() {
 	//
 
 	// Load image file from disk
-	auto textureImageFile = string("Assets\\Textures\\player1_ship.png");
-	FIBITMAP* bitmap = FreeImage_Load(FIF_PNG, textureImageFile.c_str(), BMP_DEFAULT);
+	playerTexture = fiLoadTexture(
+		string("Assets\\Textures\\player1_ship.png"),
+		FIF_PNG,
+		TextureProperties(
+			GL_RGBA,
+			GL_NEAREST,
+			GL_NEAREST,
+			1.0f,
+			GL_REPEAT,
+			GL_REPEAT,
+			false,
+			true)
+	);
+	
+	// Setup main camera
+	float viewportAspect = (float)initWidth / (float)initHeight;
+	mainCamera = new ArcballCamera(0.0f, 0.0f, 5.0f, 55.0f, viewportAspect, 0.1f, 1000.0f);
 
-	if (bitmap) {
-
-		// If image loaded, setup new texture object in OpenGL
-		glGenTextures(1, &playerTexture); // can create more than 1!
-		
-		if (playerTexture) {
-
-			glBindTexture(GL_TEXTURE_2D, playerTexture);
-
-			// Setup texture image properties
-			glTexImage2D(
-				GL_TEXTURE_2D,
-				0,
-				GL_RGBA,
-				FreeImage_GetWidth(bitmap),
-				FreeImage_GetHeight(bitmap),
-				0,
-				GL_BGRA,
-				GL_UNSIGNED_BYTE,
-				FreeImage_GetBits(bitmap));
-
-			// Setup texture filter and wrap properties
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-		}
-
-		// Once the texture has been setup, the image data is copied into OpenGL.  We no longer need the originally loaded image
-		FreeImage_Unload(bitmap);
-	}
-	else {
-
-		cout << "Error loading image!" << endl;
-	}
-
+	principleAxes = new PrincipleAxesModel();
 
 
 	//
@@ -141,8 +137,13 @@ void renderScene()
 	// Clear the rendering window
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// Get view-projection transform
+	glm::mat4 T = mainCamera->projectionTransform() * mainCamera->viewTransform();
+
+	principleAxes->render(T);
+
 	// Render objects here...
-	glEnable(GL_TEXTURE_2D);
+	/*glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, playerTexture);
 
 	glBegin(GL_QUADS);
@@ -162,7 +163,51 @@ void renderScene()
 	glEnd();
 
 	glDisable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_TEXTURE_2D);*/
+}
+
+
+
+void mouseMoveHandler(GLFWwindow* window, double xpos, double ypos) {
+
+	if (mouseDown) {
+		cout << "x = " << xpos << ", y = " << ypos << endl;
+	}
+
+}
+
+
+
+void mouseButtonHandler(GLFWwindow* window, int button, int action, int mods) {
+
+	if (button == GLFW_MOUSE_BUTTON_LEFT) {
+
+		if (action == GLFW_PRESS) {
+
+			cout << "Left button press" << endl;
+			mouseDown = true;
+		}
+		else if (action == GLFW_RELEASE) {
+
+			cout << "Left button release" << endl;
+			mouseDown = false;
+		}
+	}
+}
+
+
+void mouseEnterHandler(GLFWwindow* window, int entered) {
+
+	if (entered) {
+
+		// The cursor entered the content area of the window
+		cout << "Enter window" << endl;
+	}
+	else {
+
+		// The cursor left the content area of the window
+		cout << "Exit window" << endl;
+	}
 }
 
 

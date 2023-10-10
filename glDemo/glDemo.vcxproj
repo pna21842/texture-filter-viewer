@@ -131,16 +131,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ArcballCamera.h" />
     <ClInclude Include="core.h" />
+    <ClInclude Include="cst-math.h" />
     <ClInclude Include="FreeImage\FreeImage.h" />
     <ClInclude Include="FreeImage\FreeImagePlus.h" />
     <ClInclude Include="GLFW\glfw3.h" />
     <ClInclude Include="GLFW\glfw3native.h" />
     <ClInclude Include="GL\glew.h" />
+    <ClInclude Include="PrincipleAxesModel.h" />
+    <ClInclude Include="ShaderSetup.h" />
+    <ClInclude Include="TexturedQuadModel.h" />
+    <ClInclude Include="TextureLoader.h" />
+    <ClInclude Include="TextureProperties.h" />
+    <ClInclude Include="ViewFrustum.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ArcballCamera.cpp" />
     <ClCompile Include="core.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PrincipleAxesModel.cpp" />
+    <ClCompile Include="ShaderSetup.cpp" />
+    <ClCompile Include="TexturedQuadModel.cpp" />
+    <ClCompile Include="TextureLoader.cpp" />
+    <ClCompile Include="ViewFrustum.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

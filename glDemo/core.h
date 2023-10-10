@@ -17,6 +17,11 @@
 #include <assert.h>
 #include <math.h>
 #include <iostream>
+#include <fstream>
 #include <string>
+#include <random>
+#include <vector>
+#include "glm\mat4x4.hpp"
+#include "glm\ext.hpp"
 #include "FreeImage\\FreeImage.h"
 
