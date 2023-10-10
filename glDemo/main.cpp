@@ -3,6 +3,8 @@
 #include "TextureLoader.h"
 #include "ArcballCamera.h"
 #include "PrincipleAxesModel.h"
+#include "TexturedQuadModel.h"
+
 
 using namespace std;
 using namespace cst;
@@ -12,13 +14,19 @@ using namespace cst;
 // Example texture object
 GLuint playerTexture;
 
+// Camera model and tracking
 ArcballCamera* mainCamera = nullptr;
 bool mouseDown = false;
 double prevMouseX, prevMouseY;
 
+// Demo object
 PrincipleAxesModel* principleAxes = nullptr;
 
+// Road textures
+static const GLuint NUM_ROADS = 5;
 
+TexturedQuadModel* road[NUM_ROADS];
+int currentRoad;
 
 
 // Window size
@@ -110,6 +118,28 @@ int main() {
 
 
 	//
+	// Load example road texture with different filtering properites
+	//
+
+	// Point filtering
+	road[0] = new TexturedQuadModel(string("Assets\\Textures\\road.bmp"), FIF_BMP, TextureProperties(GL_COMPRESSED_SRGB, GL_NEAREST, GL_NEAREST, 1.0f, GL_REPEAT, GL_REPEAT, false, true));
+
+	// Bilinear filtering
+	road[1] = new TexturedQuadModel(string("Assets\\Textures\\road.bmp"), FIF_BMP, TextureProperties(GL_SRGB8_ALPHA8, GL_LINEAR, GL_LINEAR, 1.0f, GL_REPEAT, GL_REPEAT, false, true));
+
+	// Tri-linear filtering
+	road[2] = new TexturedQuadModel(string("Assets\\Textures\\road.bmp"), FIF_BMP, TextureProperties(GL_SRGB8_ALPHA8, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, 1.0f, GL_REPEAT, GL_REPEAT, true, true));
+
+	// Anisotropic x2
+	road[3] = new TexturedQuadModel(string("Assets\\Textures\\road.bmp"), FIF_BMP, TextureProperties(GL_SRGB8_ALPHA8, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, 2.0f, GL_REPEAT, GL_REPEAT, true, true));
+
+	// Anisotropic x8
+	road[4] = new TexturedQuadModel(string("Assets\\Textures\\road.bmp"), FIF_BMP, TextureProperties(GL_SRGB8_ALPHA8, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, 8.0f, GL_REPEAT, GL_REPEAT, true, true));
+
+	currentRoad = 0;
+
+
+	//
 	// 2. Main loop
 	// 
 	
@@ -142,7 +172,14 @@ void renderScene()
 	// Get view-projection transform
 	glm::mat4 T = mainCamera->projectionTransform() * mainCamera->viewTransform();
 
-	principleAxes->render(T);
+	glm::mat4 roadMVP =
+		T *
+		glm::rotate(glm::mat4(1.0f), glm::radians<float>(-80.0f), glm::vec3(1.0f, 0.0f, 0.0f)) *
+		glm::scale(glm::mat4(1.0f), glm::vec3(32.0f, 128.0f, 1.0f));
+
+	road[currentRoad]->render(roadMVP);
+
+	//principleAxes->render(T);
 
 	// Render objects here...
 	/*glEnable(GL_TEXTURE_2D);
@@ -240,6 +277,26 @@ void keyboardHandler(GLFWwindow* window, int key, int scancode, int action, int 
 		{
 			case GLFW_KEY_ESCAPE:
 				glfwSetWindowShouldClose(window, true);
+				break;
+
+			case GLFW_KEY_1:
+				currentRoad = 0;
+				break;
+
+			case GLFW_KEY_2:
+				currentRoad = 1;
+				break;
+
+			case GLFW_KEY_3:
+				currentRoad = 2;
+				break;
+
+			case GLFW_KEY_4:
+				currentRoad = 3;
+				break;
+
+			case GLFW_KEY_5:
+				currentRoad = 4;
 				break;
 
 			default:
