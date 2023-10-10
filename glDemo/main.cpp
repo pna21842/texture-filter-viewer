@@ -29,6 +29,7 @@ const unsigned int initHeight = 512;
 void renderScene();
 void mouseMoveHandler(GLFWwindow* window, double xpos, double ypos);
 void mouseButtonHandler(GLFWwindow* window, int button, int action, int mods);
+void mouseScrollHandler(GLFWwindow* window, double xoffset, double yoffset);
 void mouseEnterHandler(GLFWwindow* window, int entered);
 void resizeWindow(GLFWwindow* window, int width, int height);
 void keyboardHandler(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -68,6 +69,7 @@ int main() {
 	glfwSetKeyCallback(window, keyboardHandler); // Keyboard input callback
 	glfwSetCursorPosCallback(window, mouseMoveHandler);
 	glfwSetMouseButtonCallback(window, mouseButtonHandler);
+	glfwSetScrollCallback(window, mouseScrollHandler);
 	glfwSetCursorEnterCallback(window, mouseEnterHandler);
 
 	// Initialise glew
@@ -171,12 +173,19 @@ void renderScene()
 void mouseMoveHandler(GLFWwindow* window, double xpos, double ypos) {
 
 	if (mouseDown) {
-		cout << "x = " << xpos << ", y = " << ypos << endl;
+
+		//cout << "x = " << xpos << ", y = " << ypos << endl;
+		double dx = xpos - prevMouseX;
+		double dy = ypos - prevMouseY;
+
+		if (mainCamera)
+			mainCamera->rotateCamera((float)-dy, (float)-dx);
+
+		prevMouseX = xpos;
+		prevMouseY = ypos;
 	}
 
 }
-
-
 
 void mouseButtonHandler(GLFWwindow* window, int button, int action, int mods) {
 
@@ -184,36 +193,39 @@ void mouseButtonHandler(GLFWwindow* window, int button, int action, int mods) {
 
 		if (action == GLFW_PRESS) {
 
-			cout << "Left button press" << endl;
 			mouseDown = true;
+			glfwGetCursorPos(window, &prevMouseX, &prevMouseY);
 		}
 		else if (action == GLFW_RELEASE) {
 
-			cout << "Left button release" << endl;
 			mouseDown = false;
 		}
 	}
 }
 
+void mouseScrollHandler(GLFWwindow* window, double xoffset, double yoffset) {
+
+	if (mainCamera) {
+
+		if (yoffset < 0.0)
+			mainCamera->scaleRadius(1.1f);
+		else if (yoffset > 0.0)
+			mainCamera->scaleRadius(0.9f);
+	}
+}
 
 void mouseEnterHandler(GLFWwindow* window, int entered) {
-
-	if (entered) {
-
-		// The cursor entered the content area of the window
-		cout << "Enter window" << endl;
-	}
-	else {
-
-		// The cursor left the content area of the window
-		cout << "Exit window" << endl;
-	}
 }
 
 
 // Function to call when window resized
 void resizeWindow(GLFWwindow* window, int width, int height)
 {
+	if (mainCamera) {
+
+		mainCamera->setAspectRatio((float)width / (float)height);
+	}
+
 	glViewport(0, 0, width, height);		// Draw into entire window
 }
 
