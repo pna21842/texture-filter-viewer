@@ -45,31 +45,29 @@ void TexturedQuadModel::loadShader() {
 
 void TexturedQuadModel::setupVAO() {
 
-	// setup VAO for textured quad object
+	// Setup VAO for textured quad object
 	glGenVertexArrays(1, &quadVertexArrayObj);
 	glBindVertexArray(quadVertexArrayObj);
 
-
-	// setup vbo for position attribute
+	// Setup VBO for position attribute
 	glGenBuffers(1, &quadVertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, quadVertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadPositionArray), quadPositionArray, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (const GLvoid*)0);
 
-
-	// setup vbo for texture coord attribute
+	// Setup VBO for texture coord attribute
 	glGenBuffers(1, &quadTextureCoordBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, quadTextureCoordBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadTextureCoordArray), quadTextureCoordArray, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(3, 2, GL_FLOAT, GL_TRUE, 0, (const GLvoid*)0);
 
-	// enable vertex buffers for textured quad rendering (vertex positions and colour buffers)
+	// Enable vertex buffers for textured quad rendering (vertex positions and colour buffers)
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(3);
 
-	// unbind textured quad VAO
+	// Unbind textured quad VAO
 	glBindVertexArray(0);
 }
 

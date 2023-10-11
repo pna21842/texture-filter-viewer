@@ -107,6 +107,22 @@ int main() {
 	cout << "Vendor = " << vendorStr << endl;
 	
 
+	// Report extensions
+	cout << "Extensions supported...\n\n";
+
+	const char* glExtensionString = (const char*)glGetString(GL_EXTENSIONS);
+
+	char* strEnd = (char*)glExtensionString + strlen(glExtensionString);
+	char* sptr = (char*)glExtensionString;
+
+	while (sptr < strEnd) {
+
+		int slen = (int)strcspn(sptr, " ");
+		printf("%.*s\n", slen, sptr);
+		sptr += slen + 1;
+	}
+
+
 	// Initialise scene - geometry and shaders etc
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // setup background colour to be black
 

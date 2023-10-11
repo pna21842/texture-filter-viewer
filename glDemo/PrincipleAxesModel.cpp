@@ -81,30 +81,29 @@ PrincipleAxesModel::PrincipleAxesModel() {
 	paShader = setupShaders(string("Shaders\\basic_shader.vs.txt"), string(""), string("Shaders\\basic_shader.fs.txt"));
 
 	// setup VAO for principle axes object
-	glCreateVertexArrays(1, &paVertexArrayObj);
+	glGenVertexArrays(1, &paVertexArrayObj);
+	glBindVertexArray(paVertexArrayObj);
 
-	// setup vbo for position attribute
-	glCreateBuffers(1, &paVertexBuffer);
-	glNamedBufferStorage(paVertexBuffer, sizeof(paPositionArray), paPositionArray, 0);
-
-	glVertexArrayVertexBuffer(paVertexArrayObj, 0, paVertexBuffer, 0, sizeof(float) << 2);
-	glVertexArrayAttribBinding(paVertexArrayObj, 0, 0);
-	glVertexArrayAttribFormat(paVertexArrayObj, 0, 4, GL_FLOAT, GL_FALSE, 0);
-	glEnableVertexArrayAttrib(paVertexArrayObj, 0);
+	// Setup vbo for position attribute
+	glGenBuffers(1, &paVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, paVertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(paPositionArray), paPositionArray, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (const GLvoid*)0);
+	glEnableVertexAttribArray(0);
 
 	// Setup for colour attribute
-	glCreateBuffers(1, &paColourBuffer);
-	glNamedBufferStorage(paColourBuffer, sizeof(paColourArray), paColourArray, 0);
-
-	glVertexArrayVertexBuffer(paVertexArrayObj, 1, paColourBuffer, 0, sizeof(float) << 2);
-	glVertexArrayAttribBinding(paVertexArrayObj, 1, 1);
-	glVertexArrayAttribFormat(paVertexArrayObj, 1, 4, GL_FLOAT, GL_FALSE, 0);
-	glEnableVertexArrayAttrib(paVertexArrayObj, 1);
+	glGenBuffers(1, &paColourBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, paColourBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(paColourArray), paColourArray, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (const GLvoid*)0);
+	glEnableVertexAttribArray(1);
 
 	// Setup index buffer
-	glCreateBuffers(1, &paIndexBuffer);
-	glNamedBufferStorage(paIndexBuffer, sizeof(paIndexArray), paIndexArray, 0);
-	glVertexArrayElementBuffer(paVertexArrayObj, paIndexBuffer);
+	glGenBuffers(1, &paIndexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, paIndexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(paIndexArray), paIndexArray, GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
 }
 
 
