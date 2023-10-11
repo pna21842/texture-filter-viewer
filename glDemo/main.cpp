@@ -4,44 +4,50 @@
 #include "ArcballCamera.h"
 #include "PrincipleAxesModel.h"
 #include "TexturedQuadModel.h"
-
+#include "GUFont.h"
 
 using namespace std;
 using namespace cst;
 
-// global variables
-
-// Example texture object
-GLuint playerTexture;
+#pragma region Global variables
 
 // Camera model and tracking
-ArcballCamera* mainCamera = nullptr;
-bool mouseDown = false;
-double prevMouseX, prevMouseY;
+ArcballCamera*		mainCamera = nullptr;
+bool				mouseDown = false;
+double				prevMouseX, prevMouseY;
 
-// Demo object
-PrincipleAxesModel* principleAxes = nullptr;
+// Demo object for camera testing (setup for now but not rendered as part of main demo)
+PrincipleAxesModel*	principleAxes = nullptr;
 
 // Road textures
-static const GLuint NUM_ROADS = 5;
-
-TexturedQuadModel* road[NUM_ROADS];
-int currentRoad;
-
+static const GLuint	NUM_ROADS = 5;
+TexturedQuadModel*	road[NUM_ROADS];
+int					currentRoad;
 
 // Window size
-const unsigned int initWidth = 512;
-const unsigned int initHeight = 512;
+const unsigned int	initWidth = 1024;
+const unsigned int	initHeight = 768;
 
-// Function prototypes
+// Variables to store text rendering properties and font
+GUFont*				font;
+glm::mat4			fontViewMatrix;
+glm::vec4			fontColour;
+
+#pragma endregion
+
+
+#pragma region Function prototypes
+
 void renderScene();
+void updateScene();
 void mouseMoveHandler(GLFWwindow* window, double xpos, double ypos);
 void mouseButtonHandler(GLFWwindow* window, int button, int action, int mods);
 void mouseScrollHandler(GLFWwindow* window, double xoffset, double yoffset);
 void mouseEnterHandler(GLFWwindow* window, int entered);
 void resizeWindow(GLFWwindow* window, int width, int height);
 void keyboardHandler(GLFWwindow* window, int key, int scancode, int action, int mods);
-void updateScene();
+
+#pragma endregion
 
 
 int main() {
@@ -82,35 +88,35 @@ int main() {
 
 	// Initialise glew
 	glewInit();
-
 	
 	// Setup window's initial size
 	resizeWindow(window, initWidth, initHeight);
+
+	//
+	// Report OpenGL properties for created context
+	// 
+	
+	// Report context version
+	int majorVersion, minorVersion;
+
+	glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
+	glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
+	cout << "OpenGL version " << majorVersion << "." << minorVersion << "\n\n";
+
+	auto vendorStr = glGetString(GL_VENDOR);
+	cout << "Vendor = " << vendorStr << endl;
+	
 
 	// Initialise scene - geometry and shaders etc
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // setup background colour to be black
 
 
-	//
-	// Setup textures
-	//
+	// Setup font
+	font = new GUFont(wstring(L"Courier New"), 18);
+	fontViewMatrix = glm::ortho(-4.0f, 4.0f, -4.0f, 4.0f, -1.0f, 1.0f);
+	fontColour = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
 
-	// Load image file from disk
-	playerTexture = fiLoadTexture(
-		string("Assets\\Textures\\player1_ship.png"),
-		FIF_PNG,
-		TextureProperties(
-			GL_RGBA,
-			GL_NEAREST,
-			GL_NEAREST,
-			1.0f,
-			GL_REPEAT,
-			GL_REPEAT,
-			false,
-			true)
-	);
-	
-	// Setup main camera
+	// Setup main camera and test axis object
 	float viewportAspect = (float)initWidth / (float)initHeight;
 	mainCamera = new ArcballCamera(0.0f, 0.0f, 5.0f, 55.0f, viewportAspect, 0.1f, 1000.0f);
 
@@ -172,40 +178,35 @@ void renderScene()
 	// Get view-projection transform
 	glm::mat4 T = mainCamera->projectionTransform() * mainCamera->viewTransform();
 
+	// Setup transform to position and project road model
 	glm::mat4 roadMVP =
 		T *
 		glm::rotate(glm::mat4(1.0f), glm::radians<float>(-80.0f), glm::vec3(1.0f, 0.0f, 0.0f)) *
 		glm::scale(glm::mat4(1.0f), glm::vec3(32.0f, 128.0f, 1.0f));
 
+	// Draw the road model
 	road[currentRoad]->render(roadMVP);
 
-	//principleAxes->render(T);
 
-	// Render objects here...
-	/*glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, playerTexture);
+	// Display text showing current filtering mode
+	static const char* filterStrings[] = {
+		"Point filtering",
+		"Bi-linear filtering",
+		"Tri-linear filtering",
+		"Anisotropic filtering 2x",
+		"Anisotropic filtering 8x" };
 
-	glBegin(GL_QUADS);
+	glDisable(GL_TEXTURE_2D);
+	glUseProgram(0);
+	font->renderText(-4.0f, 3.5f, fontViewMatrix, fontColour, "Filtering mode: %s", filterStrings[currentRoad]);
+}
 
-	glTexCoord2f(0.0f, 1.0f);
-	glVertex2f(-0.5f, 0.5f);
-
-	glTexCoord2f(1.0f, 1.0f);
-	glVertex2f(0.5f, 0.5f);
-
-	glTexCoord2f(1.0f, 0.0f);
-	glVertex2f(0.5f, -0.5f);
-
-	glTexCoord2f(0.0f, 0.0f);
-	glVertex2f(-0.5f, -0.5f);
-
-	glEnd();
-
-	glDisable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);*/
+// Function called to animate elements in the scene
+void updateScene() {
 }
 
 
+#pragma region Event Handler functions
 
 void mouseMoveHandler(GLFWwindow* window, double xpos, double ypos) {
 
@@ -254,7 +255,6 @@ void mouseScrollHandler(GLFWwindow* window, double xoffset, double yoffset) {
 void mouseEnterHandler(GLFWwindow* window, int entered) {
 }
 
-
 // Function to call when window resized
 void resizeWindow(GLFWwindow* window, int width, int height)
 {
@@ -265,7 +265,6 @@ void resizeWindow(GLFWwindow* window, int width, int height)
 
 	glViewport(0, 0, width, height);		// Draw into entire window
 }
-
 
 // Function to call to handle keyboard input
 void keyboardHandler(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -309,8 +308,7 @@ void keyboardHandler(GLFWwindow* window, int key, int scancode, int action, int 
 	}
 }
 
+#pragma endregion
 
-// Function called to animate elements in the scene
-void updateScene() {
-}
+
 
